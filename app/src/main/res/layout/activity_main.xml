@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#2196F3"
+            android:text="Virtual IP:" />
+
+        <EditText
+            android:id="@+id/agent_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:singleLine="true"
+            android:text="x.x.x.x"
+            android:textAlignment="center" />
+
+
+    </LinearLayout>
+
+    <Switch
+        android:id="@+id/sw_connect"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Disconnected" />
+
+    <TextView style="@style/item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/address"/>
+
+    <EditText
+        style="@style/item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/edt_address"/>
+
+    <TextView
+        style="@style/item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/port"/>
+
+    <EditText
+        style="@style/item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/edt_port"/>
+
+    <TextView
+        style="@style/item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/secret"/>
+
+    <EditText
+        style="@style/item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/edt_secret"
+        android:inputType="numberPassword"/>
+
+    <Button style="@style/item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_connect"
+        android:text="@string/connect"/>
+
+
+</LinearLayout>
