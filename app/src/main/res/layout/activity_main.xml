@@ -19,7 +19,7 @@
             android:text="Virtual IP:" />
 
         <EditText
-            android:id="@+id/agent_ip"
+            android:id="@+id/edt_vir_ip"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
@@ -30,51 +30,8 @@
 
     </LinearLayout>
 
-    <Switch
-        android:id="@+id/sw_connect"
-        android:layout_marginTop="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Disconnected" />
-
-    <TextView style="@style/item"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/address"/>
-
-    <EditText
-        style="@style/item"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/edt_address"/>
-
-    <TextView
-        style="@style/item"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/port"/>
-
-    <EditText
-        style="@style/item"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/edt_port"/>
-
-    <TextView
-        style="@style/item"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/secret"/>
-
-    <EditText
-        style="@style/item"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/edt_secret"
-        android:inputType="numberPassword"/>
-
     <Button style="@style/item"
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btn_connect"

@@ -33,24 +33,29 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.Selector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LocalVPNService extends VpnService
 {
     private static final String TAG = LocalVPNService.class.getSimpleName();
-    private static final String VPN_ADDRESS = "192.168.45.2"; // Only IPv4 support for now
+    private static final String VPN_ADDRESS = "192.168.43.1"; // Only IPv4 support for now
     private static final String VPN_ROUTE = "0.0.0.0"; // Intercept everything
 
     public static final String BROADCAST_VPN_STATE = LocalVPNService.class.getName() + ".VPN_STATE";
     public static final String ACTION_CONNECT = LocalVPNService.class.getName() + ".START";
     public static final String ACTION_DISCONNECT = LocalVPNService.class.getName() + ".STOP";
+    public static final String ACTION_ADDRESS = LocalVPNService.class.getName() + ".ADDRESS";
 
     private static boolean isRunning = false;
+    private static String mServerAddress = "192.168.43.1";
 
     private ParcelFileDescriptor vpnInterface = null;
 
@@ -68,7 +73,12 @@ public class LocalVPNService extends VpnService
     public void onCreate()
     {
         super.onCreate();
-        isRunning = true;
+//        isRunning = true;
+//        startVPN();
+    }
+
+    private void startVPN()
+    {
         setupVPN();
         try
         {
@@ -95,6 +105,7 @@ public class LocalVPNService extends VpnService
             Log.e(TAG, "Error starting service", e);
             cleanup();
         }
+
     }
 
     private void setupVPN()
@@ -102,23 +113,45 @@ public class LocalVPNService extends VpnService
         if (vpnInterface == null)
         {
             Builder builder = new Builder();
-            builder.addAddress(VPN_ADDRESS, 32);
+            builder.addAddress(mServerAddress, 32);
             builder.addRoute(VPN_ROUTE, 32);
             vpnInterface = builder.setSession(getString(R.string.app_name)).setConfigureIntent(pendingIntent).establish();
         }
     }
 
+    /** * 判断是否为合法IP **/
+    public static boolean isCorrectIp(String ipAddress)
+    {
+        String ip = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";
+        Pattern pattern = Pattern.compile(ip);
+        Matcher matcher = pattern.matcher(ipAddress);
+        return matcher.matches();
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        if (intent != null) {
-            if (ACTION_DISCONNECT.equals(intent.getAction())) {
+        if (intent != null)
+        {
+            if (ACTION_DISCONNECT.equals(intent.getAction()))
+            {
                 stopVService();
                 return START_NOT_STICKY;
             }
+            else if(!isRunning)
+            {
+                String vpnAddress = intent.getStringExtra(ACTION_ADDRESS);
+                if(!isCorrectIp(vpnAddress))
+                {
+                    stopSelf();
+                    return START_NOT_STICKY;
+                }
+                mServerAddress = vpnAddress;
+                isRunning = true;
+                startVPN();
+            }
         }
         return START_STICKY;
-
     }
 
     public static boolean isRunning()

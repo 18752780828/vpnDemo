@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.net.VpnService
 import android.os.Bundle
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.vpndemo1.vpn.sever.LocalVPNService
@@ -16,13 +17,16 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     private val VPN_REQUEST_CODE = 0x0F
-
+    private var virtualIP4Str = "192.168.43.1";
     private var waitingForVPNStart = false
 
     private val vpnStateReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (LocalVPNService.BROADCAST_VPN_STATE == intent.action) {
-                if (intent.getBooleanExtra("running", false)) waitingForVPNStart = false
+                if (intent.getBooleanExtra("running", false)) {
+                    waitingForVPNStart = false
+                    synEdtIpSta(true, true)
+                }
             }
         }
 
@@ -31,74 +35,70 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        edt_vir_ip.setText(virtualIP4Str)
         waitingForVPNStart = false
         LocalBroadcastManager.getInstance(this).registerReceiver(
             vpnStateReceiver,
             IntentFilter(LocalVPNService.BROADCAST_VPN_STATE)
         )
 
-//        sw_connect.setOnCheckedChangeListener{_,checked->
-//            if(checked)
-//                startVPN()
-//            else
-//                shutdownVPN()
-//        }
-
         btn_connect.setOnClickListener {
             if(!waitingForVPNStart){
-                startVPN()
+                if(LocalVPNService.isRunning())
+                    shutdownVPN()
+                else
+                    startVPN()
             }
         }
     }
 
     private fun startVPN() {
+        virtualIP4Str = edt_vir_ip.text.toString()
+        if(!LocalVPNService.isCorrectIp(virtualIP4Str)){
+            Toast.makeText(this,"IP不合法!", Toast.LENGTH_SHORT).show()
+            return
+        }
         val vpnIntent = VpnService.prepare(this)
-        if (vpnIntent != null)
+        if (vpnIntent != null) {
+            vpnIntent.putExtra(LocalVPNService.ACTION_ADDRESS, edt_vir_ip.text.toString())
             startActivityForResult(vpnIntent, VPN_REQUEST_CODE)
+            synEdtIpSta(false,false)
+        }
         else
             onActivityResult(VPN_REQUEST_CODE, RESULT_OK, null)
-    }
-
-    private fun swSynStatus(sta:Boolean) {
-        if(sta)
-            sw_connect.setText("Connected")
-        else
-            sw_connect.setText("Disconnected")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == VPN_REQUEST_CODE && resultCode == RESULT_OK) {
             waitingForVPNStart = true
-            startService(Intent(this, LocalVPNService::class.java))
-            enableButton(false)
+            val intent = Intent(this, LocalVPNService::class.java)
+            intent.putExtra(LocalVPNService.ACTION_ADDRESS, edt_vir_ip.text.toString())
+            startService(intent)
+            synEdtIpSta(false,false)
+
         }
     }
 
     override fun onResume() {
         super.onResume()
-        enableButton(!waitingForVPNStart && !LocalVPNService.isRunning())
+        synEdtIpSta(!waitingForVPNStart, LocalVPNService.isRunning())
     }
 
-    private fun enableButton(enable: Boolean) {
-        val vpnButton = findViewById<Button>(R.id.btn_connect)
-        if (enable) {
-            vpnButton.isEnabled = true
-            vpnButton.setText(R.string.connected)
-        } else {
-            vpnButton.isEnabled = false
-            vpnButton.setText(R.string.disconnected)
-        }
+    private fun synEdtIpSta(enSta: Boolean, conSta: Boolean) {
+
+        btn_connect.isEnabled = enSta
+        if (conSta) btn_connect.setText(R.string.connected)
+        else btn_connect.setText(R.string.disconnected)
+        edt_vir_ip.isEnabled = (enSta && !conSta)
     }
 
-//    private fun shutdownVPN() {
-//        if (VhostsService.isRunning())
-//            startService(
-//                Intent(this, VhostsService::class.java).
-//            setAction(VhostsService.ACTION_DISCONNECT))
-//        swSynStatus(false)
-//    }
+    private fun shutdownVPN() {
+            startService(
+                Intent(this, LocalVPNService::class.java).
+            setAction(LocalVPNService.ACTION_DISCONNECT))
+        synEdtIpSta(true, false)
+    }
 
 
 }
